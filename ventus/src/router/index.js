@@ -1,11 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import ClimaView from '../views/ClimaView.vue'
 
 const routes = [
-  { path: '/', name: 'home', component: HomeView },
+  { path: '/', component: HomeView },
+  { path: '/clima', component: ClimaView }
 ]
 
-export default createRouter({
+const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes
 })
+
+export default router

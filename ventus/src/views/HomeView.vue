@@ -1,47 +1,87 @@
+<script setup>
+</script>
+
 <template>
-  <div class="page">
-    <NavBar />
+  <div class="home">
+
+    <div class="overlay"></div>
+
     <div class="content">
-      <WeatherHero :ciudad="ciudad" :hora="horaActual" />
-      <ForecastTable />
-      <WeatherDetails :uv="ciudad.uv" :condiciones="condiciones" />
+      <h1>🌦️ Ventus</h1>
+      <p>Consulta el clima en tiempo real en cualquier ciudad</p>
+
+      <router-link to="/clima">
+        <button>Comenzar</button>
+      </router-link>
     </div>
+
   </div>
 </template>
 
-<script setup>
-import NavBar        from '../components/NavBar.vue'
-import WeatherHero   from '../components/WeatherHero.vue'
-import ForecastTable from '../components/ForecastTable.vue'
-import WeatherDetails from '../components/WeatherDetails.vue'
-
-const horaActual = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
-
-const ciudad = {
-  nombre:   'Santa Marta',
-  region:   'Santa Marta · Magdalena',
-  icono:    '☀️',
-  temp:     31,
-  viento:   13,
-  sensacion: 37,
-  uv:       2,
-  stats: [
-    { label: 'Nubes',   val: '55%',  sub: 'Parcialmente nublado' },
-    { label: 'Humedad', val: '66%',  sub: 'Alta' },
-    { label: 'Rad. UV', val: 'Baja', sub: 'Índice 2' },
-    { label: 'Presión', val: '1008', sub: 'hPa' },
-  ],
+<style>
+.home {
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  font-family: 'Segoe UI', sans-serif;
+  overflow: hidden;
 }
 
-const condiciones = [
-  { icono: '💧', label: 'Humedad relativa',     val: '66%'      },
-  { icono: '🌬️', label: 'Velocidad del viento', val: '13 km/h'  },
-  { icono: '⏱️', label: 'Presión atmosférica',  val: '1008 hPa' },
-  { icono: '👁️', label: 'Visibilidad',          val: '10 km'    },
-]
-</script>
+/* EFECTO LUZ */
+.overlay {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2), transparent);
+  animation: mover 8s infinite linear;
+}
 
-<style scoped>
-.page { min-height: 100vh; background: #f0f6ff; }
-.content { max-width: 1080px; margin: 0 auto; padding: 36px 24px 60px; }
+/* CONTENIDO */
+.content {
+  position: relative;
+  text-align: center;
+  color: white;
+  animation: fadeIn 1s ease;
+}
+
+h1 {
+  font-size: 50px;
+  margin-bottom: 10px;
+}
+
+p {
+  margin-bottom: 20px;
+}
+
+/* BOTÓN */
+button {
+  padding: 12px 25px;
+  border-radius: 30px;
+  border: none;
+  background: white;
+  color: #333;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.1);
+  background: #ddd;
+}
+
+/* ANIMACIONES */
+@keyframes mover {
+  0% { transform: translate(-25%, -25%); }
+  50% { transform: translate(25%, 25%); }
+  100% { transform: translate(-25%, -25%); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 </style>
