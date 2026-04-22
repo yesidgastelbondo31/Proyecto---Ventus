@@ -4,10 +4,11 @@ import { obtenerClima, obtenerPronostico } from '../services/apiClima'
 import CardClima from '../components/CardClima.vue'
 import Loader from '../components/Loader.vue'
 import Pronostico from '../components/Pronostico.vue'
+import Mapa from '../components/Mapa.vue'
 
 const ciudad = ref('')
 const clima = ref(null)
-const pronostico = ref(null) // ✅ FALTABA
+const pronostico = ref(null) 
 const cargando = ref(false)
 const error = ref('')
 const esNoche = ref(false)
@@ -42,12 +43,12 @@ const usarUbicacion = () => {
 
     try {
       const resClima = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=es`
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${"8a4da5d592076bd8ec093170cc9ba1c5"}&units=metric&lang=es`
       )
       clima.value = await resClima.json()
 
       const resPronostico = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=es`
+        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${"8a4da5d592076bd8ec093170cc9ba1c5"}&units=metric&lang=es`
       )
       pronostico.value = await resPronostico.json()
 
@@ -94,6 +95,11 @@ onMounted(() => {
 
       <CardClima v-if="clima" :data="clima" />
       <Pronostico v-if="pronostico" :data="pronostico" />
+      <Mapa 
+        v-if="clima" 
+        :lat="clima.coord.lat" 
+        :lon="clima.coord.lon" 
+      />
     </div>
 
   </div>
@@ -104,9 +110,11 @@ onMounted(() => {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: 0.5s;
-  font-family: 'Segoe UI', sans-serif;
+  justify-content: center; /* 🔥 CENTRA */
+  padding: 20px;
+  background: linear-gradient(135deg, #dfe9f3, #ffffff);
+  height: 100%;
+  flex: 1;
 }
 
 /* FONDOS */
@@ -137,6 +145,7 @@ onMounted(() => {
   text-align: center;
   box-shadow: 0 20px 50px rgba(0,0,0,0.3);
   animation: fadeIn 0.6s ease;
+  margin: auto;
 }
 
 .search {

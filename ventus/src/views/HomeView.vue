@@ -28,6 +28,7 @@
   position: relative;
   font-family: 'Segoe UI', sans-serif;
   overflow: hidden;
+  flex: 1;
 }
 
 /* EFECTO LUZ */

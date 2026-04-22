@@ -32,14 +32,22 @@ defineProps(['data'])
 
 .dias {
   display: flex;
-  justify-content: space-between;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .dia {
   background: rgba(255,255,255,0.2);
   padding: 10px;
-  border-radius: 10px;
-  width: 60px;
+  border-radius: 12px;
+  width: 80px;
   text-align: center;
+  backdrop-filter: blur(10px);
+  transition: 0.3s;
+}
+
+.button:hover {
+  transform: scale(1.03);
 }
 </style>
