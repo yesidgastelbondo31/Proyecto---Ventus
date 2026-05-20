@@ -1,108 +1,214 @@
-<script setup>
-import { ref, onMounted } from 'vue'
+<script>
 import { obtenerClima, obtenerPronostico } from '../services/apiClima'
 import CardClima from '../components/CardClima.vue'
 import Loader from '../components/Loader.vue'
 import Pronostico from '../components/Pronostico.vue'
 import Mapa from '../components/Mapa.vue'
+import PantallaCarga from '../components/PantallaCarga.vue'
+import Saludo from '../components/Saludo.vue'
+import InfoExtra from '../components/InfoExtra.vue'
+import Estadisticas from '../components/Estadisticas.vue'
+import EstadoConexion from '../components/EstadoConexion.vue'
+import Reloj from '../components/Reloj.vue'
+import SunInfo from '../components/SunInfo.vue'
+import FondoAnimado from '../components/FondoAnimado.vue'
+import CiudadesPopulares from '../components/CiudadesPopulares.vue'
+import Termometro from '../components/Termometro.vue'
 
-const ciudad = ref('')
-const clima = ref(null)
-const pronostico = ref(null) 
-const cargando = ref(false)
-const error = ref('')
-const esNoche = ref(false)
 
-const API_KEY = "8a4da5d592076bd8ec093170cc9ba1c5" 
+export default {
+  components: {
+  CardClima,
+  Loader,
+  Pronostico,
+  Mapa,
+  PantallaCarga,
+  Saludo,
+  InfoExtra,
+  Estadisticas,
+  EstadoConexion,
+  Reloj
+  },
 
-const buscar = async () => {
-  if (!ciudad.value) return
+  data() {
+    return {
+      ciudad: '',
+      clima: null,
+      pronostico: null,
+      cargando: false,
+      error: '',
+      esNoche: false,
+      API_KEY: '8a4da5d592076bd8ec093170cc9ba1c5'
+    }
+  },
 
-  cargando.value = true
-  error.value = ''
-  clima.value = null
-  pronostico.value = null
+  methods: {
+    async buscar() {
+      if (!this.ciudad) return
 
-  try {
-    clima.value = await obtenerClima(ciudad.value)
-    pronostico.value = await obtenerPronostico(ciudad.value)
-  } catch (e) {
-    error.value = "Ciudad no encontrada"
-  } finally {
-    cargando.value = false
+      this.cargando = true
+      this.error = ''
+      this.clima = null
+      this.pronostico = null
+
+      try {
+        this.clima = await obtenerClima(this.ciudad)
+        this.pronostico = await obtenerPronostico(this.ciudad)
+      } catch (e) {
+        this.error = 'Ciudad no encontrada'
+      } finally {
+        this.cargando = false
+      }
+    },
+
+    usarUbicacion() {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const lat = pos.coords.latitude
+        const lon = pos.coords.longitude
+
+        this.cargando = true
+        this.error = ''
+
+        try {
+          const resClima = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${this.API_KEY}&units=metric&lang=es`
+          )
+
+          this.clima = await resClima.json()
+
+          const resPronostico = await fetch(
+            `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${this.API_KEY}&units=metric&lang=es`
+          )
+
+          this.pronostico = await resPronostico.json()
+
+        } catch {
+          this.error = 'No se pudo obtener ubicación'
+        } finally {
+          this.cargando = false
+        }
+      })
+    },
+
+    getFondo() {
+      if (!this.clima) {
+        return this.esNoche ? 'noche' : 'dia'
+      }
+
+      const temp = this.clima.main.temp
+
+      if (this.esNoche) return 'noche'
+
+      return temp > 25 ? 'calor' : 'frio'
+    }
+  },
+
+  mounted() {
+    const hora = new Date().getHours()
+    this.esNoche = hora >= 18 || hora <= 6
   }
 }
-
-const usarUbicacion = () => {
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-    const lat = pos.coords.latitude
-    const lon = pos.coords.longitude
-
-    cargando.value = true
-    error.value = ''
-
-    try {
-      const resClima = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${"8a4da5d592076bd8ec093170cc9ba1c5"}&units=metric&lang=es`
-      )
-      clima.value = await resClima.json()
-
-      const resPronostico = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${"8a4da5d592076bd8ec093170cc9ba1c5"}&units=metric&lang=es`
-      )
-      pronostico.value = await resPronostico.json()
-
-    } catch {
-      error.value = "No se pudo obtener ubicación"
-    } finally {
-      cargando.value = false
-    }
-  })
-}
-
-const getFondo = () => {
-  if (!clima.value) return esNoche.value ? 'noche' : 'dia'
-
-  const temp = clima.value.main.temp
-
-  if (esNoche.value) return 'noche'
-  return temp > 25 ? 'calor' : 'frio'
-}
-
-onMounted(() => {
-  const hora = new Date().getHours()
-  esNoche.value = hora >= 18 || hora <= 6
-})
 </script>
-
 <template>
+
+  <PantallaCarga v-if="cargando" />
+
   <div :class="['clima', getFondo()]">
 
+    <FondoAnimado />
+
     <div class="box">
+
       <h1>🌦️ Ventus</h1>
 
+      <Saludo />
+
+      <Reloj />
+
+      <!-- BUSCADOR -->
       <div class="search">
-        <input v-model="ciudad" placeholder="Buscar ciudad..." />
-        <button @click="buscar">🔍</button>
+
+        <input
+          v-model="ciudad"
+          placeholder="Buscar ciudad..."
+        />
+
+        <button @click="buscar">
+          🔍
+        </button>
+
       </div>
 
-      <button class="ubicacion" @click="usarUbicacion">
+      <!-- CIUDADES POPULARES -->
+      <CiudadesPopulares
+        @seleccionar="ciudad = $event; buscar()"
+      />
+
+      <!-- BOTÓN UBICACIÓN -->
+      <button
+        class="ubicacion"
+        @click="usarUbicacion"
+      >
         📍 Usar mi ubicación
       </button>
 
-      <Loader v-if="cargando" />
-      <p v-if="error">{{ error }}</p>
+      <!-- ERROR -->
+      <p v-if="error">
+        {{ error }}
+      </p>
 
-      <CardClima v-if="clima" :data="clima" />
-      <Pronostico v-if="pronostico" :data="pronostico" />
-      <Mapa 
-        v-if="clima" 
-        :lat="clima.coord.lat" 
-        :lon="clima.coord.lon" 
+      <!-- CLIMA -->
+      <CardClima
+        v-if="clima"
+        :data="clima"
       />
+
+      <!-- INFO EXTRA -->
+      <InfoExtra
+        v-if="clima"
+        :data="clima"
+      />
+
+      <!-- ESTADÍSTICAS -->
+      <Estadisticas
+        v-if="clima"
+        :data="clima"
+      />
+
+      <!-- CONEXIÓN API -->
+      <EstadoConexion
+        v-if="clima"
+      />
+
+      <!-- SOL -->
+      <SunInfo
+        v-if="clima"
+        :data="clima"
+      />
+
+      <!-- TERMÓMETRO -->
+      <Termometro
+        v-if="clima"
+        :data="clima"
+      />
+
+      <!-- PRONÓSTICO -->
+      <Pronostico
+        v-if="pronostico"
+        :data="pronostico"
+      />
+
+      <!-- MAPA -->
+      <Mapa
+        v-if="clima"
+        :lat="clima.coord.lat"
+        :lon="clima.coord.lon"
+      />
+
     </div>
 
   </div>
+
 </template>
 
 <style>
@@ -110,7 +216,7 @@ onMounted(() => {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center; /* 🔥 CENTRA */
+  justify-content: center;
   padding: 20px;
   background: linear-gradient(135deg, #dfe9f3, #ffffff);
   height: 100%;
@@ -173,7 +279,7 @@ button {
 }
 
 button:hover {
-  transform: scale(1.1);
+  transform: scale(1.03);
 }
 
 .ubicacion {
@@ -187,7 +293,14 @@ button:hover {
 
 /* ANIMACIÓN */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
